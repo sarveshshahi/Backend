@@ -35,7 +35,7 @@ const userSchema=mongoose.Schema({
 
     },
     watchHistory:{
-        type:Schema>Types.ObjectId,
+        type:Schema.Types.ObjectId,
         ref:"Video"
     },
     password:{
@@ -51,7 +51,7 @@ const userSchema=mongoose.Schema({
 
 userSchema.pre("save",async function (next){
     if(!this.isModified("password"))return next()
-    this.password=bcrypt.hash(this.password,10)
+    this.passwordawait = await bcrypt.hash(this.password,10)
     next()
 })
 userSchema.methods.isPasswordCorrect=async function
@@ -88,4 +88,4 @@ userSchema.methods.generateRefreshToken=function(){
 
  
 
-export const User=mongoose.model("User",userSchema)
+export const User=mongoose.model("User", userSchema)
