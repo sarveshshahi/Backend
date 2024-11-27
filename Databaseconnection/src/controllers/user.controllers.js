@@ -194,7 +194,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken
+  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "unauthorised request")
@@ -209,27 +209,32 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     if (user.refreshToken !== incomingRefreshToken) {
       throw new ApiError(401, "RefreshToken is expried")
     }
+
     const options = {
       httpOnly: true,
-      secure: true
-    }
-    const { accessToken, newRefeshToken } = await generateAccessAndRefreshToken(user._id)
+      secure: true,
+    };
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefeshToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new ApiResponse(
           200,
-          { accessToken, refreshToken: newRefeshToken },
-          "access Token Refeshed"
+          { accessToken, refreshToken: refreshToken },
+          "Access token refreshed"
         )
-      )
+      );
   } catch (error) {
     new ApiError(401, error?.message || "invalid refesh token")
 
   }
-})
+});
+
+
 
 
 export { registerUser, loginUser, logoutUser, refreshAccessToken };
