@@ -343,48 +343,47 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
   if (!username?.trim()) {
-    throw new ApiError(400, "user not found");
+    throw new ApiError(400, "User not found");
   }
 
-  // User.find({username})
-  const channel = User.aggregate([
+  const channel = await User.aggregate([
     {
       $match: {
-        username: username?.toLowerCase(),
-      },
+        username: username?.toLowerCase()
+      }
     },
     {
       $lookup: {
         from: "subscriptions",
-        localFiled: "_id",
+        localField: "_id",
         foreignField: "channel",
-        as: "subscribers",
-      },
+        as: "subscribers"
+      }
     },
     {
       $lookup: {
-        form: "subscriptions",
-        localFiled: "_id",
+        from: "subscriptions",
+        localField: "_id",
         foreignField: "subscribers",
-        as: "subscribedTo",
-      },
+        as: "subscribedTo"
+      }
     },
     {
       $addFields: {
         subscribersCount: {
-          $size: "$subscribers",
+          $size: "$subscribers"
         },
         channelSubscribedToCount: {
-          $size: "$subscribedTo",
+          $size: "$subscribedTo"
         },
         isSubscribed: {
           $cond: {
             if: { $in: [req.user?._id, "$subscribers.subscriber"] },
             then: true,
-            else: false,
-          },
-        },
-      },
+            else: false
+          }
+        }
+      }
     },
     {
       $project: {
@@ -395,20 +394,21 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         isSubscribed: 1,
         avatar: 1,
         coverImage: 1,
-        email: 1,
-      },
-    },
+        email: 1
+      }
+    }
   ]);
 
   console.log("channel", channel);
   if (!channel?.length) {
-    throw new ApiError(404, "channel dose not exits");
+    throw new ApiError(404, "Channel does not exist");
   }
 
-  return req
-    .status(200)
-    .json(new ApiResponse(200, channel[0], "userchannel fetch successfully"));
+  return res.status(200).json(
+    new ApiResponse(200, channel[0], "User channel fetched successfully")
+  );
 });
+
 
 export {
   registerUser,
