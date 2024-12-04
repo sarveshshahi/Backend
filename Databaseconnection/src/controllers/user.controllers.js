@@ -415,12 +415,12 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
-        _id: new mangoose.Types.ObjectId(req.user._id),
+        _id: new mongoose.Types.ObjectId(req.user._id),
       },
     },
     {
       $lookup: {
-        id: "vidoes",
+        id: "videos",
         localFiled: "watchHistory",
         foreignField: "_id",
         as: "watchHistory",
@@ -443,8 +443,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
             ],
           },
           {
-            owner:{
-              $first:"$owner"
+            $addFields: { 
+              owner: { $first: "$owner" }
             }
           }
         ],
